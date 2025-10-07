@@ -1,0 +1,47 @@
+name: Android Build
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  build:
+    name: Build Android with Native
+    runs-on: ubuntu-latest
+
+    env:
+      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+      ANDROID_SDK_ROOT: $HOME/Android/Sdk
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: "11"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          api-level: 31
+          build-tools-version: "31.0.0"
+          ndk-version: "21.4.7075529"
+          cmake-version: "3.22.1"
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Build project
+        run: ./gradlew clean assembleRelease --stacktrace
+
+      - name: Archive APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: mobileblox-apk
+          path: app/build/outputs/**/*.apk
