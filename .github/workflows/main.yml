@@ -3,7 +3,6 @@ name: Android Build
 on:
   push:
     branches: [ main, master ]
-  pull_request:
 
 jobs:
   build:
@@ -15,37 +14,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Java 17
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK (stable)
+      - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
           cmdline-tools-version: 12266719
           accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: true
           packages: |
             platforms;android-34
             build-tools;34.0.0
             ndk;26.1.10909125
             cmake;3.22.1
 
-      - name: Verify sdkmanager
+      - name: Fix Android SDK path
         run: |
-          echo "sdkmanager version:"
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --version
-
-      - name: Make gradlew executable
-        run: chmod +x gradlew
+          mkdir -p $HOME/Android/Sdk/cmdline-tools/latest
+          mv $HOME/Android/Sdk/cmdline-tools/* $HOME/Android/Sdk/cmdline-tools/latest || true
+          echo "ANDROID_SDK_ROOT=$HOME/Android/Sdk" >> $GITHUB_ENV
+          echo "$HOME/Android/Sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          sdkmanager --version
 
       - name: Build project
-        run: ./gradlew clean assembleRelease --stacktrace
+        run: ./gradlew assembleRelease --stacktrace
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: mobileblox-apk
+          name: app-release
           path: app/build/outputs/**/*.apk
