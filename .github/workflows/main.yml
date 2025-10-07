@@ -2,9 +2,7 @@ name: Android Build
 
 on:
   push:
-    branches:
-      - main
-      - master
+    branches: [ main, master ]
   pull_request:
 
 jobs:
@@ -12,18 +10,16 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
       ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Java
+      - name: Setup Java 17
         uses: actions/setup-java@v4
         with:
           distribution: "temurin"
-          java-version: "11"
+          java-version: "17"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
@@ -38,10 +34,10 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x gradlew
 
-      - name: Build project (Release)
+      - name: Build project
         run: ./gradlew clean assembleRelease --stacktrace
 
-      - name: Upload APK artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: mobileblox-apk
