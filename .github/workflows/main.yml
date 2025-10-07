@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
     steps:
       - name: Checkout repository
@@ -19,12 +21,10 @@ jobs:
           distribution: temurin
           java-version: 17
 
-      - name: Setup Android SDK (cmdline-tools latest)
+      - name: Setup Android SDK (stable)
         uses: android-actions/setup-android@v3
-        env:
-          ANDROID_SDK_ROOT: $HOME/Android/Sdk
         with:
-          cmdline-tools-version: latest
+          cmdline-tools-version: 12266719
           accept-android-sdk-licenses: true
           log-accepted-android-sdk-licenses: true
           packages: |
@@ -33,20 +33,16 @@ jobs:
             ndk;26.1.10909125
             cmake;3.22.1
 
-      - name: Verify SDK tools
+      - name: Verify sdkmanager
         run: |
           echo "sdkmanager version:"
-          $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --version
-        env:
-          ANDROID_SDK_ROOT: $HOME/Android/Sdk
+          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --version
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Build project
         run: ./gradlew clean assembleRelease --stacktrace
-        env:
-          ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
