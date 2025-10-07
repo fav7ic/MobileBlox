@@ -9,9 +9,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    env:
-      ANDROID_SDK_ROOT: ${{ runner.temp }}/android-sdk
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -24,6 +21,8 @@ jobs:
 
       - name: Setup Android SDK (cmdline-tools latest)
         uses: android-actions/setup-android@v3
+        env:
+          ANDROID_SDK_ROOT: $HOME/Android/Sdk
         with:
           cmdline-tools-version: latest
           accept-android-sdk-licenses: true
@@ -37,13 +36,17 @@ jobs:
       - name: Verify SDK tools
         run: |
           echo "sdkmanager version:"
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --version
+          $HOME/Android/Sdk/cmdline-tools/latest/bin/sdkmanager --version
+        env:
+          ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
       - name: Make gradlew executable
         run: chmod +x gradlew
 
       - name: Build project
         run: ./gradlew clean assembleRelease --stacktrace
+        env:
+          ANDROID_SDK_ROOT: $HOME/Android/Sdk
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
